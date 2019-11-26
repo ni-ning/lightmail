@@ -81,6 +81,7 @@ class Email(object):
                     name = 'attachment_%s.txt' % idx
 
                 name = os.path.basename(name)
+                subtype = mimetypes.guess_type(name)[0] or 'text/plain'
                 subtype = mimetypes.guess_type(att_content, subtype)
                 att_msg = MIMEApplication(att_content, subtype)
                 name_b64 = base64.b64encode(name.encode('utf-8'))
