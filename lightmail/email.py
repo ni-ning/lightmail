@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
+import uuid
 import sys
 import os
 import logging
@@ -13,8 +14,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
 from email.utils import formatdate
-
-import uuid
 
 from lightmail import utils
 
@@ -33,14 +32,13 @@ class Email(object):
 
         self._config['ssl'] = True if str(self._config['port']) in ['465', '587'] else False
 
-    def _get_content(self, content):
+    @staticmethod
+    def _get_content(content):
         name = ""
         if content and len(content) > 1024:
             pass
         elif not isinstance(content, six.string_types):
             pass
-        elif content == 'STDIN':
-            content = sys.stdin.read()
         elif content.startswith('@') and os.path.exists(content[1:]):
             name = content[1:]
             content = open(content[1:], 'rb').read()
@@ -116,6 +114,9 @@ class Email(object):
                 else args['bcc']
         main_msg['Date'] = formatdate(localtime=True)
         main_msg['Message-ID'] = '%s.%s' % (str(uuid.uuid1()), main_msg['From'])
+        headers = args.get('headers') or {}
+        for key, value in headers.items():
+            main_msg[key] = value
         return main_msg
 
     def send_email(self, msg):
@@ -142,26 +143,30 @@ def send_email(to, content=None, title=None, mail_from=None,
                attach=None, cc=None, bcc=None, text=None, headers=None):
     '''
 
-    :param to:
-    :param content:
-    :param title:
-    :param mail_from:
-    :param attach:
-    :param cc:
-    :param bcc:
+    :param to: 单个收件人或列表
+    :param content: 内容，支持纯文本和HTML
+    :param title: 标题
+    :param mail_from: 发件人
+    :param attach: 附件列表 ["@file_path"]
+    :param cc: 抄送人或抄送人列表
+    :param bcc: 匿名抄送人或抄送人列表
     :param text: 邮件纯文本内容
-    :param headers:
-    :return:
+    :param headers: 其他 MIME Header属性
+    :return: {}
     '''
-    arg_dict = dict(to=to)
+    arg_dict = dict()
+
     arg_dict['to'] = to
-    arg_dict['content'] = content
-    arg_dict['title'] = title
-    arg_dict['mail_from'] = mail_from
-    arg_dict['attach'] = attach
     arg_dict['cc'] = cc
     arg_dict['bcc'] = bcc
+
+    arg_dict['title'] = title
+    arg_dict['mail_from'] = mail_from
+
+    arg_dict['content'] = content
+    arg_dict['attach'] = attach
     arg_dict['text'] = text
+
     arg_dict['headers'] = headers or {}
 
     e = Email()
