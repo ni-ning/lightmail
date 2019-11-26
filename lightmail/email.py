@@ -2,7 +2,6 @@
 from __future__ import absolute_import, unicode_literals
 
 import uuid
-import sys
 import os
 import logging
 import socket
@@ -98,20 +97,21 @@ class Email(object):
             for att_msg in att_msgs:
                 main_msg.attach(att_msg)
 
+        main_msg['To'] = args['to']
         args['title'] = args.get('title') or '无题'
         if isinstance(args['title'], list):
             args['title'] = ''.join(args['title'])
 
         main_msg['Subject'] = Header(utils.to_unicode(args['title']))
         main_msg['From'] = args.get('mail_from', '')
-        main_msg['To'] = ', '.join(args['to']) if isinstance(args['to'], list) \
-            else args['to']
+
         if args.get('cc'):
-            main_msg['Cc'] = ", ".join(args['cc']) if isinstance(args['cc'], list) \
-                else args['cc']
+            main_msg['Cc'] = ', '.join(args['cc']) if isinstance(args['cc'], list)\
+                             else args['cc']
         if args.get('bcc'):
-            main_msg['Bcc'] = ", ".join(args['bcc']) if isinstance(args['bcc'], list) \
-                else args['bcc']
+            main_msg['Bcc'] = ', '.join(args['bcc']) if isinstance(args['bcc'], list)\
+                              else args['bcc']
+
         main_msg['Date'] = formatdate(localtime=True)
         main_msg['Message-ID'] = '%s.%s' % (str(uuid.uuid1()), main_msg['From'])
         headers = args.get('headers') or {}
@@ -120,10 +120,15 @@ class Email(object):
         return main_msg
 
     def send_email(self, msg):
+        params = {
+            'host': self._config['host'],
+            'port': self._config['port']
+        }
+        if 'timeout' in self._config:
+            params['timeout'] = self._config['timeout']
+
         cls = smtplib.SMTP_SSL if self._config['ssl'] else smtplib.SMTP
-        client = cls(host=self._config['host'],
-                     port=self._config['port'],
-                     timeout=self._config.get('timeout', socket._GLOBAL_DEFAULT_TIMEOUT))
+        client = cls(**params)
         client.login(self._config['user'], self._config['password'])
 
         _to = [msg[i].split(',') for i in ['to', 'cc', 'bcc'] if msg.get(i)]
@@ -155,11 +160,18 @@ def send_email(to, content=None, title=None, mail_from=None,
     :return: {}
     '''
     arg_dict = dict()
-
+    if isinstance(to, list):
+        to = ', '.join(to)
     arg_dict['to'] = to
+    if isinstance(cc, list):
+        cc = ', '.join(cc)
     arg_dict['cc'] = cc
+    if isinstance(bcc, list):
+        bcc = ', '.join(bcc)
     arg_dict['bcc'] = bcc
 
+    if isinstance(title, list):
+        title = ''.join(title)
     arg_dict['title'] = title
     arg_dict['mail_from'] = mail_from
 
