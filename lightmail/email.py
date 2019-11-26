@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-import base64
 import sys
 import os
 import logging
@@ -9,6 +8,7 @@ import socket
 import smtplib
 import six
 import mimetypes
+from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
@@ -84,18 +84,18 @@ class Email(object):
                 subtype = mimetypes.guess_type(name)[0] or 'text/plain'
                 subtype = mimetypes.guess_type(att_content, subtype)
                 att_msg = MIMEApplication(att_content, subtype)
-                name_b64 = base64.b64encode(name.encode('utf-8'))
-                filename = '=?utf-8?b?' + name_b64.decode() + '?='
-                att_msg.add_header('Content-Disposition', 'attachment', filename=filename)
+                att_msg.add_header('Content-Disposition', 'attachment', filename=Header(name, 'utf-8').encode())
+                att_msg.add_header('Content-ID', '<%s>' % idx)
+                att_msg.add_header('X-Attachment-Id', '%s' % idx)
                 att_msgs.append(att_msg)
                 attach_size += len(att_content)
+
         main_msg = MIMEMultipart()
         if sub_msgs:
             sub_main = MIMEMultipart('alternative')
             for msg in sub_msgs:
                 sub_main.attach(msg)
             main_msg.attach(sub_main)
-
         if att_msgs:
             for att_msg in att_msgs:
                 main_msg.attach(att_msg)
@@ -104,7 +104,7 @@ class Email(object):
         if isinstance(args['title'], list):
             args['title'] = ''.join(args['title'])
 
-        main_msg['Subject'] = utils.to_unicode(args['title'])
+        main_msg['Subject'] = Header(utils.to_unicode(args['title']))
         main_msg['From'] = args.get('mail_from', '')
         main_msg['To'] = ', '.join(args['to']) if isinstance(args['to'], list) \
             else args['to']
@@ -112,16 +112,13 @@ class Email(object):
             main_msg['Cc'] = ", ".join(args['cc']) if isinstance(args['cc'], list) \
                 else args['cc']
         if args.get('bcc'):
-            main_msg['Bcc'] = ", ".join(args['bcc']) if isinstance(args['bcc'], list)\
-                              else args['bcc']
+            main_msg['Bcc'] = ", ".join(args['bcc']) if isinstance(args['bcc'], list) \
+                else args['bcc']
         main_msg['Date'] = formatdate(localtime=True)
-        headers = args.get('headers') or {}
         main_msg['Message-ID'] = '%s.%s' % (str(uuid.uuid1()), main_msg['From'])
-        for key, value in headers.items():
-            main_msg[key] = value
         return main_msg
 
-    def send(self, msg):
+    def send_email(self, msg):
         cls = smtplib.SMTP_SSL if self._config['ssl'] else smtplib.SMTP
         client = cls(host=self._config['host'],
                      port=self._config['port'],
@@ -169,4 +166,4 @@ def send_email(to, content=None, title=None, mail_from=None,
 
     e = Email()
     msg = e.build_email(arg_dict)
-    return e.send(msg)
+    return e.send_email(msg)
