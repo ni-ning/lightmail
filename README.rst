@@ -23,7 +23,7 @@ Send Email for Python
 
     pip install lightmail
 
-升级 exmail-sdk 到新版本::
+升级 lightmail 到新版本::
 
     pip install -U lightmail
 
