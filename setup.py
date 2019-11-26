@@ -17,9 +17,7 @@ sdict = {
     'version': '0.0.1',
     'keywords': 'email, smtplib, lightmail',
     'packages': [
-        'lightmail',
-        'lightmail.email',
-        'lightmail.utils'
+        'lightmail'
     ],
     'install_requires': requirements,
     'zip_safe': False,
