@@ -15,17 +15,15 @@ with open('requirements.txt') as f:
 sdict = {
     'name': 'lightmail',
     'version': '0.0.1',
-    'keywords': 'tencent, exmail, exmail-sdk, SDK',
+    'keywords': 'email, smtplib, lightmail',
     'packages': [
-        'exmail',
-        'exmail.client',
-        'exmail.client.api',
-        'exmail.core',
-        'exmail.storage'
+        'lightmail',
+        'lightmail.email',
+        'lightmail.utils'
     ],
     'install_requires': requirements,
     'zip_safe': False,
-    'description': 'Tencent Exmail SDK for Python',
+    'description': 'Send Email for Python',
     'long_description': long_description,
     'url': 'https://github.com/ni-ning/lightmail',
     'author': 'ni-ning',
@@ -33,7 +31,6 @@ sdict = {
     'classifiers': [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
-        'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
