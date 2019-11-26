@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+import six
 import os
 import logging
 from configparser import ConfigParser
@@ -28,3 +29,8 @@ def load_config(section):
         for opt in cf.options(section):
             config[opt] = cf.get(section, opt)
     return config
+
+def to_unicode(s):
+    if not isinstance(s, six.text_type):
+        return s.decode('utf-8', 'ignore')
+    return s

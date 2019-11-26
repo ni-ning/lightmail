@@ -14,7 +14,7 @@ Send Email for Python
 安装
 ********
 
-目前 lightmail 支持的 Python 环境有 2.7, 3.4, 3.5, 3.6, 3.7, 3.8。
+目前 lightmail 支持的 Python 环境有 2.7, 3.4, 3.5, 3.6, 3.7, 3.8
 
 
 为了简化安装过程，推荐使用 pip 进行安装
