@@ -14,7 +14,7 @@ with open('requirements.txt') as f:
 
 sdict = {
     'name': 'lightmail',
-    'version': '0.0.1',
+    'version': '1.0.0',
     'keywords': 'email, smtplib, lightmail',
     'packages': [
         'lightmail'
