@@ -4,7 +4,6 @@ from __future__ import absolute_import, unicode_literals
 import uuid
 import os
 import logging
-import socket
 import smtplib
 import six
 import mimetypes
@@ -15,6 +14,9 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 
 from lightmail import utils
+
+
+__all__ = ['Email', 'send_email']
 
 
 class Email(object):
@@ -44,6 +46,22 @@ class Email(object):
         return content, name
 
     def build_email(self, args):
+        """
+        构造邮件 args dict 所需 key
+
+        必填项 to: 收件人，如 'linda@gmail.com' 或 'linda@gmail.com, tom@gmail.com' 或 ['linda@gmail.com, tom@gmail.com']
+        可选项 content: 邮件内容，纯文本或HTML str
+        可选项 title: 邮件标题 str or list
+        可选项 mail_from: 发件人 str
+        可选项 attach: 附件列表 ["@/tmp/test.txt"]
+        可选项 cc: 抄送人, 格式同收件人
+        可选项 bcc: 匿名抄送人, 格式同收件人
+        可选项 text: 邮件纯文本 str
+        可选项 html: 邮件HTML str
+        可选项 headers: 其他 MIME Header属性 dict
+        :return: 正常返回 {} dict
+
+        """
         sub_msgs, att_msgs = [], []
         if args.get('text'):
             content, _ = self._get_content(args['text'])
@@ -102,7 +120,7 @@ class Email(object):
         if isinstance(args['title'], list):
             args['title'] = ''.join(args['title'])
 
-        main_msg['Subject'] = Header(utils.to_unicode(args['title']))
+        main_msg['Subject'] = utils.to_unicode(args['title'])
         main_msg['From'] = args.get('mail_from', '')
 
         if args.get('cc'):
@@ -120,6 +138,7 @@ class Email(object):
         return main_msg
 
     def send_email(self, msg):
+        """ 发送邮件 """
         params = {
             'host': self._config['host'],
             'port': self._config['port']
@@ -145,20 +164,22 @@ class Email(object):
 
 
 def send_email(to, content=None, title=None, mail_from=None,
-               attach=None, cc=None, bcc=None, text=None, headers=None):
-    '''
+               attach=None, cc=None, bcc=None, text=None, html=None, headers=None):
 
-    :param to: 单个收件人或列表
-    :param content: 内容，支持纯文本和HTML
-    :param title: 标题
-    :param mail_from: 发件人
-    :param attach: 附件列表 ["@file_path"]
-    :param cc: 抄送人或抄送人列表
-    :param bcc: 匿名抄送人或抄送人列表
-    :param text: 邮件纯文本内容
-    :param headers: 其他 MIME Header属性
-    :return: {}
-    '''
+    """
+    :param to: 收件人，如 'linda@gmail.com' 或 'linda@gmail.com, tom@gmail.com' 或 ['linda@gmail.com, tom@gmail.com']
+    :param content: 邮件内容，纯文本或HTML str
+    :param title: 邮件标题 str or list
+    :param mail_from: 发件人 str
+    :param attach: 附件列表 ["@/tmp/test.txt"]
+    :param cc: 抄送人, 格式同收件人
+    :param bcc: 匿名抄送人, 格式同收件人
+    :param text: 邮件纯文本 str
+    :param html: 邮件HTML str
+    :param headers: 其他 MIME Header属性 dict
+    :return: 正常返回 {} dict
+    """
+
     arg_dict = dict()
     if isinstance(to, list):
         to = ', '.join(to)
@@ -178,6 +199,7 @@ def send_email(to, content=None, title=None, mail_from=None,
     arg_dict['content'] = content
     arg_dict['attach'] = attach
     arg_dict['text'] = text
+    arg_dict['html'] = html
 
     arg_dict['headers'] = headers or {}
 
