@@ -1,7 +1,8 @@
 ################################
 Send Email for Python
 ################################
-
+.. image:: https://img.shields.io/badge/pypi-v1.0.0-blue
+       :target: https://pypi.org/project/lightmail/
 
 
 **********
